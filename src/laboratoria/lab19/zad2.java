@@ -7,9 +7,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-//Napisz program, który korzystając z bazy danych AdventureWorks
-// wyświetli podstawowe dane 10. pierwszych osób (Person.Contact),
-// którzy mają na nazwisko „Anderson”.
+//        Napisz program, który korzystając z bazy danych AdventureWorks wyświetli podstawowe dane 10. pierwszych osób (Person.Contact),
+//        którzy mają na nazwisko „Anderson”.
+//
+//        Dokonaj modyfikacji powyższego programu, aby można było wyszukiwać osoby podając początek nazwiska.
+
 public class zad2 {
     public static void main(String[] args) {
         SQLServerDataSource ds = new SQLServerDataSource();
@@ -22,21 +24,34 @@ public class zad2 {
 
         String sql = "SELECT FirstName, LastName FROM Person.Contact WHERE LastName LIKE ?";
 
-        try (Connection con = ds.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            String beginning = "Fa";
-            ps.setString(1, beginning + "%");
-            ResultSet rs = ps.executeQuery();
+        if (args.length != 0) {
+            ResultSet rs = null;
+            try (Connection con = ds.getConnection();
+                 PreparedStatement ps = con.prepareStatement(sql)) {
+                String beginning = args[0];
+                ps.setString(1, beginning + "%");
+                rs = ps.executeQuery();
 
-            if (rs.next()) {
-                do {
-                    System.out.println(rs.getString(1) + " " + rs.getString(2));
-                } while (rs.next());
-            } else {
-                System.out.println("Brak osób o nazwisku zaczynającym się na " + beginning);
+                if (rs.next()) {
+                    do {
+                        System.out.println(rs.getString(1) + " " + rs.getString(2));
+                    } while (rs.next());
+                } else {
+                    System.out.println("Brak osób o nazwisku zaczynającym się na " + beginning);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (rs != null) {
+                    try {
+                        rs.close();
+                    } catch (SQLException e) {
+                        System.out.println("Problem przy close dla ResultSet");
+                    }
+                }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } else {
+            System.out.println("Należy w args podać początek nazwiska...");
         }
     }
 }

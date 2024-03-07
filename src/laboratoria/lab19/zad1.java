@@ -28,7 +28,7 @@ public class zad1 {
                 System.out.println(rs.getString(1) + " " + rs.getString(2));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }
